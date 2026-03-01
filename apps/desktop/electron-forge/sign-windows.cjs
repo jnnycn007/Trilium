@@ -1,9 +1,10 @@
 const child_process = require("child_proces");
 const fs = require("fs");
+const { rm } = require("fs/promises");
 const path = require("path");
 
 module.exports = async function (filePath) {
-    const { WINDOWS_SIGN_EXECUTABLE } = process.env;
+    const { WINDOWS_SIGN_EXECUTABLE, WINDOWS_SIGN_ERROR_LOG } = process.env;
 
     if (!WINDOWS_SIGN_EXECUTABLE) {
         console.warn("[Sign] Skip signing due to missing environment variable.");
@@ -22,6 +23,17 @@ module.exports = async function (filePath) {
     let remainingTries = 10;
     let sleepTime = 10_000;
     while (remainingTries > 0) {
+        // Delete the log file that might be blocking the signing.
+        try {
+            await rm(WINDOWS_SIGN_ERROR_LOG, {
+                force: true
+            })
+        } catch (e) {
+            console.error("[Sign] Unable to delete the log file.");
+            process.exit(2);
+        }
+
+        // Run the signing.
         try {
             child_process.execSync(command);
             console.log(`[Sign] Signed ${filePath} successfully.`);
