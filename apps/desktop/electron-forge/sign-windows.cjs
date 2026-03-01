@@ -1,4 +1,4 @@
-const child_process = require("child_proces");
+const child_process = require("child_process");
 const fs = require("fs");
 const { rm } = require("fs/promises");
 const path = require("path");
